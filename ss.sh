@@ -10,14 +10,18 @@ apt upgrade -y
 apt install -y shadowsocks-libev
 
 # 配置 Shadowsocks
+server_port=8388
+password="your_password"
+method="aes-256-gcm"
+
 cat > /etc/shadowsocks-libev/config.json <<EOF
 {
     "server": "0.0.0.0",
-    "server_port": 8388,
+    "server_port": $server_port,
     "local_port": 1080,
-    "password": "your_password",
+    "password": "$password",
     "timeout": 300,
-    "method": "aes-256-gcm"
+    "method": "$method"
 }
 EOF
 
@@ -25,9 +29,17 @@ EOF
 systemctl restart shadowsocks-libev
 systemctl enable shadowsocks-libev
 
-# 显示配置信息
+# 获取服务器IP
+server_ip=$(curl -s ifconfig.me)
+
+# 生成 Shadowsocks 分享 URL (SUR)
+sur="ss://$(echo -n "$method:$password@$server_ip:$server_port" | base64)#Shadowsocks"
+
+# 输出配置信息
 echo "Shadowsocks 已成功搭建!"
-echo "服务器地址: $(curl -s ifconfig.me)"
-echo "服务器端口: 8388"
-echo "密码: your_password"
-echo "加密方式: aes-256-gcm"
+echo "服务器地址: $server_ip"
+echo "服务器端口: $server_port"
+echo "密码: $password"
+echo "加密方式: $method"
+echo "Shadowsocks 分享 URL (SUR):"
+echo "$sur"

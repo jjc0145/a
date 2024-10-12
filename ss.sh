@@ -1,52 +1,33 @@
-﻿#!/bin/bash
+#!/bin/bash
 
-# 检查是否安装了 Git
-if ! command -v git &> /dev/null; then
-    echo "Git 未安装，正在安装 Git..."
-    
-    # 检测操作系统类型
-    if [ -f /etc/redhat-release ]; then
-        # CentOS/RHEL 系统
-        sudo yum -y install git
-    elif [ -f /etc/debian_version ]; then
-        # Debian/Ubuntu 系统
-        sudo apt-get update && sudo apt-get -y install git
-    elif [ -f /etc/os-release ]; then
-        # 一些其他 Linux 发行版（如 Arch、Fedora 等）
-        . /etc/os-release
-        if [[ "$ID" == "fedora" ]]; then
-            sudo dnf install -y git
-        elif [[ "$ID" == "arch" ]]; then
-            sudo pacman -S --noconfirm git
-        else
-            echo "未检测到支持的 Linux 发行版，无法自动安装 Git。请手动安装 Git。"
-            exit 1
-        fi
-    else
-        echo "未检测到已知的 Linux 发行版，无法自动安装 Git。请手动安装 Git。"
-        exit 1
-    fi
-fi
+# 一键搭建 Shadowsocks 服务脚本，使用 aes-256-gcm 加密方式
 
-# 下载 Shadowsocks 一键搭建脚本
-echo "下载 Shadowsocks 一键搭建脚本..."
-git clone -b master https://github.com/flyzy2005/ss-fly
+# 更新系统软件包
+apt update -y
+apt upgrade -y
 
-# 运行 Shadowsocks 安装脚本
-echo "运行 Shadowsocks 安装脚本..."
-bash ss-fly/ss-fly.sh -i flyzy2005.com 1024
+# 安装 Shadowsocks 服务端
+apt install -y shadowsocks-libev
 
-# 启用 BBR 加速
-echo "启用 BBR 加速..."
-bash ss-fly/ss-fly.sh -bbr
+# 配置 Shadowsocks
+cat > /etc/shadowsocks-libev/config.json <<EOF
+{
+    "server": "0.0.0.0",
+    "server_port": 8388,
+    "local_port": 1080,
+    "password": "your_password",
+    "timeout": 300,
+    "method": "aes-256-gcm"
+}
+EOF
 
-# 验证 BBR 是否成功开启
-echo "验证 BBR 加速是否成功开启..."
-bbr_status=$(sysctl net.ipv4.tcp_available_congestion_control | grep 'bbr')
-if [[ $bbr_status == *"bbr"* ]]; then
-    echo "BBR 加速已成功开启。"
-else
-    echo "BBR 加速未成功开启，请检查配置。"
-fi
+# 启动并启用 Shadowsocks 服务
+systemctl restart shadowsocks-libev
+systemctl enable shadowsocks-libev
 
-echo "Shadowsocks 安装及 BBR 配置脚本执行完成。"
+# 显示配置信息
+echo "Shadowsocks 已成功搭建!"
+echo "服务器地址: $(curl -s ifconfig.me)"
+echo "服务器端口: 8388"
+echo "密码: your_password"
+echo "加密方式: aes-256-gcm"

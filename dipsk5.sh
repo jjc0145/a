@@ -1,5 +1,5 @@
 ﻿#/bin/sh
-socks_port="313" #端口可修改
+socks_port="1080" #端口可修改
 socks_user="313"  #账号
 socks_pass="313"  #密码
 iptables -P INPUT ACCEPT

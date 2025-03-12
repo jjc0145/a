@@ -1,9 +1,16 @@
-﻿apt-get update;
-sudo apt install -y shadowsocks-libev;
+﻿#!/bin/bash
 
-/etc/init.d/shadowsocks-libev start;
-systemctl start shadowsocks-libev;   
+# 更新包列表
+apt-get update
 
+# 安装 shadowsocks-libev
+sudo apt install -y shadowsocks-libev
+
+# 启动 shadowsocks-libev 服务
+/etc/init.d/shadowsocks-libev start
+systemctl start shadowsocks-libev
+
+# 创建配置文件
 echo '{
     "server":["::0", "0.0.0.0"],
     "mode":"tcp_and_udp",
@@ -12,6 +19,7 @@ echo '{
     "password":"996996ZZ",
     "timeout":86400,
     "method":"chacha20-ietf-poly1305"
-}' > /etc/shadowsocks-libev/config.json;
+}' > /etc/shadowsocks-libev/config.json
 
-systemctl restart shadowsocks-libev;
+# 重启 shadowsocks-libev 服务
+systemctl restart shadowsocks-libev
